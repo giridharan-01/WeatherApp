@@ -1,0 +1,82 @@
+ /*html {
+  height: 100%;
+}*/
+*{
+color: #fff;
+font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
+}
+
+
+.bg {
+  /* The image used */
+  background-image: url("Weatherapp.jpg");
+  /*background-image: url("seasons.gif");*/
+  /* Full height */
+  height: auto;
+
+  /* Center and scale the image nicely */
+  /*background-position: center;*/
+  background-repeat: no-repeat;
+  background-size: cover;
+  width: 100%;
+}
+
+.regbg {
+  /* The image used */
+  background-image: url("passing clouds.gif");
+  /* Full height */
+  height: auto;
+  background-repeat: no-repeat;
+  background-size: cover;
+  width: 100%;
+}
+
+.outlinewrap{
+/*border: 3px solid #fff;*/
+padding: 50px 50px;
+margin-top: 7vh;
+
+}
+/*
+.heading{
+border: 1px solid #fff;
+padding: 10px;
+margin-top: 15vh;
+}*/
+
+
+::-webkit-input-placeholder {
+  text-align: center;
+}
+
+:-moz-placeholder {
+  text-align: center;
+}
+
+.centreshadow{
+-webkit-box-shadow: 1px 6px 49px 26px rgba(0,0,0,0.75);
+-moz-box-shadow: 1px 6px 49px 26px rgba(0,0,0,0.75);
+box-shadow: 1px 6px 49px 26px rgba(0,0,0,0.75);
+}
+
+.dark{
+	color:#444444 ;
+	background:#D8EEED;
+}
+
+.rightshadow{
+	-webkit-box-shadow: -15px 18px 24px 1px rgba(0,0,0,0.75);
+-moz-box-shadow: -15px 18px 24px 1px rgba(0,0,0,0.75);
+box-shadow: -15px 18px 24px 1px rgba(0,0,0,0.75);
+}
+.wrapper{
+	/*border: 3px solid #000;*/
+padding: 50px;
+margin-top: 10vh;
+}
+
+.headadjust{
+margin-top: 20vh;
+}
+
+

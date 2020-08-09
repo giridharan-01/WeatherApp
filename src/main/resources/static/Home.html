@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>HOME</title>
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+
+<link rel="stylesheet" href="mystyle.css">
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+  <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+</head>
+<script>
+var x_axis=[];
+var y_axisMaxTemp=[],y_axisMinTemp=[];
+var uname=null;
+var timezone=null;
+$(document).ready(function(){
+
+	$('#moreinfobutton').click(function() {
+	    $('#moreinfobutton').css({
+	    	'visibility': 'hidden'
+	    });
+	});
+	$('#myChart,#barChart').hide();
+	$(function(){
+		$("#city").autocomplete({
+			//source:["chennai","chengalpattu","chengam","coimbatore"],
+			source:"search",
+			minLength:3
+		});
+	});
+	});
+
+
+	function startTime() {
+		
+		  var today = new Date();
+		  var date_day=today.toDateString();
+		  var h = today.getHours();
+		  var m = today.getMinutes();
+		  var s = today.getSeconds();
+		  m = checkTime(m);
+		  s = checkTime(s);
+		  document.getElementById("time").innerHTML =date_day+"<span style='color:Yellow'> "+h + ":" + m + ":" + s+"</span>";
+		  var t = setTimeout(startTime, 1000);
+		}
+		
+		function checkTime(i) {
+		  if (i < 10) {i = "0" + i};  // add zero in front of numbers < 10
+		  return i;
+		}
+		
+		function reintialize(msg){
+			if(msg===undefined)
+				var error="City not found";
+			else
+				var error="No data found";
+			
+			var op = "<h1>"+error+"</h1>";
+			$('#content').css({
+				'visibility' : 'hidden'
+			});
+			$('#cartoon').show();
+			$('#moreinfobutton').css({
+				'visibility' : 'hidden'
+			});
+			$('#cityname,#timezone,#myChart,#barChart').hide();
+			$("#error").html(op);
+		}
+
+		
+  var output=null;
+
+	function clearLocalStorage(){
+		localStorage.removeItem("message");
+		console.log("cleared success");
+		var res = uname.split(" ");
+		localStorage.setItem("logout",res[1]);
+		window.location.replace("index.html");
+		//Toaster.show("Log out");
+		//localStorage.setItem("notify","");
+	}
+	
+	
+	var id=null;
+	var city=null;
+	var timezone=null;
+	var displayCityName=null;
+	
+	function getId(){
+		var arr=document.getElementById("city").value.split(",");
+		//console.log(arr[0]+" "+arr[1]+" "+arr[2]);
+		//console.log(arr.length);
+		displayCityName=arr[0];
+		if(arr[0]==""){
+			console.log("empty array");
+			reintialize("empty");
+			return false;
+		}
+		if(arr[0]!="" && arr.length==1){
+			console.log("Value in array");
+			city=arr[0];
+			getWeatherData();
+			return false;
+			//reintialize("empty");
+			//return false;
+		}
+		var payload='{"name":"'+arr[0]+'","country":"'+arr[1]+'","state":"'+arr[2]+'"}';
+		console.log(payload);
+		var request = new XMLHttpRequest();
+		request.open("POST", "http://localhost:8888/getId", true);
+		request.setRequestHeader("Content-type", "application/json");
+		//console.log("request set successfully");
+		
+		request.onload = function () {
+			  // Begin accessing JSON data here
+			  console.log("Request on load");
+			  var result=this.response;
+			  if(result===""){ 
+				  console.log("NUll result");
+				  reintialize();
+				  return false;
+			  }
+			  //console.log("result=",result);
+			  //id=result;
+			  //city=arr[0];
+			  city=result;
+			  //console.log("id set =",id);
+			  getWeatherData();
+			  //getWeatherDataUsingID();
+		}
+		request.send(payload);
+		console.log("request sent");
+	}
+	
+	function getWeatherData(){
+		//console.log(uname);
+		//console.log("Get Weather id=",id);
+		console.log("Weather Data () calls");
+		console.log("Type=",typeof city);
+		console.log("Value=",city);
+		if(city==""){
+			reintialize();
+			console.log("If city is null");
+			return false;
+		}
+		//$("#cityname").html(city.toUpperCase());
+		var url = "http://localhost:8888/test/" + city;
+		console.log(url);
+
+		var request = new XMLHttpRequest();
+		request.open('GET', url, true)
+		//console.log(city);
+
+		request.onload = function() {
+			// Begin accessing JSON data here
+			//console.log("Test");
+			var len = Object.keys(this.response).length;
+			//console.log(Object.keys(this.response));		if invalid city =[]
+			//console.log(len);
+			if (len == 0) {
+				reintialize();
+				console.log("Invalid city ");
+				return false;
+			}
+			
+			output = JSON.parse(this.response);
+			$('#moreinfobutton').css({
+				'visibility' : 'visible'
+			});
+			$('#content').css({
+				'visibility' : 'visible'
+			});
+			$('#cartoon').hide();
+			$('#cityname,#timezone').show();
+			$("#cityname").html(displayCityName.toUpperCase());
+			$("#timezone").html(output.timezone);
+			getPrimaryInfo();
+						//getBarChart();
+
+		}
+
+		// Send request
+		request.send();
+		console.log("Finished getWeatherData() ");
+
+	}
+	
+	function getPrimaryInfo(){
+		var daily = output["daily"];
+		x_axis = [];
+		y_axisMaxTemp = [];
+		y_axisMinTemp = [];
+		y_axisHumidity=[];
+		y_axisPercp=[];
+		var l = daily.length;
+		for (let i = 0; i < l; i++) {
+			var date = new Date(daily[i].dt * 1000);
+			var h = "#h" + i;
+			//console.log(h);
+			x_axis.push(date.toDateString());
+			//console.log("x->pushed " + x_axis);
+			$(h).html(date.toDateString());
+
+			//var t="<b>Day & Time</b> :"+date.toGMTString()+"<br /><br />";
+			y_axisMaxTemp.push(daily[i].temp.max);
+			y_axisMinTemp.push(daily[i].temp.min);
+			y_axisHumidity.push(daily[i].humidity);
+			var t = "<table><tr><td><b>Temp-Max</b></td><td>:</td><td>"
+					+ daily[i].temp.max
+					+ " &#8451 </td></tr> <tr><td><b>Temp-Min</b></td><td>:</td><td>"
+					+ daily[i].temp.min + " &#8451</td></tr>";
+			//t=t+"<b>pressure: </b>"+daily[i].pressure+" hPa<br /><br />";
+			var pop = daily[i].pop * 100;
+			t = t + "<tr><td><b>Percipitation</b></td><td>:</td><td>"
+					+ Math.round(pop) + " %</td></tr>";
+			y_axisPercp.push(Math.round(pop));
+			t = t + "<tr><td><b>Wind Speed</b></td><td>:</td><td>"
+					+ daily[i].wind_speed + " metre/sec</td></tr>"
+					+ "<tr><td><b>Humidity</b></td><td>:</td><td>"
+					+ daily[i].humidity + " %</td></tr></table>";
+			//console.log(t);
+			var c = "#day" + i;
+			//console.log(c);
+			$(c).html(t); //max temperature;
+
+		}
+		$('#myChart').show();
+		$('#barChart').show();
+		console.log("x-> " + x_axis);
+		console.log("y-> " + y_axisMaxTemp);
+		getChart();
+
+	}
+
+	function getWeatherInfoOfTheDay() { // x refers to the btn id
+		var daily = output["daily"];
+		console.log("daily");
+		console.log(output);
+		var l = daily.length;
+		//console.log(l);
+		timezone = output.timezone;
+		for (let i = 0; i < l; i++) {
+			//console.log("iteration");
+			var sunrise = new Date(daily[i].sunrise * 1000);
+			var sunset = new Date(daily[i].sunset * 1000);
+			console.log("Sunset in IST" + sunset);
+			var timeString_sunrise = (new Date(sunrise)).toLocaleString(
+					"en-US", {
+						timeZone : timezone
+					});
+			var timeString_sunset = (new Date(sunset)).toLocaleString("en-US",
+					{
+						timeZone : timezone
+					});
+			console.log("Sunset in local " + timeString_sunset);
+			//var timeString=sunrise.toLocaleString("en-US", timezoneJson);
+			//console.log(timeString);
+			var sunriseString = (new Date(timeString_sunrise)).toDateString()
+					+ " " + (new Date(timeString_sunrise)).toLocaleTimeString()
+					+ " (" + timezone + ")";
+			var sunsetString = (new Date(timeString_sunset)).toDateString()
+					+ " " + (new Date(timeString_sunset)).toLocaleTimeString()
+					+ " (" + timezone + ")";
+			console.log("SunRise: " + sunriseString);
+			console.log("SunSet: " + sunsetString);
+			var t = "<table><tr><td><b>Temp-Max</b></td><td>:</td><td>"
+					+ daily[i].temp.max
+					+ " &#8451 </td></tr> <tr><td><b>Temp-Min</b></td><td>:</td><td>"
+					+ daily[i].temp.min + " &#8451</td></tr>";
+			//t=t+"<b>pressure: </b>"+daily[i].pressure+" hPa<br /><br />";
+			var pop = daily[i].pop * 100;
+			t = t + "<tr><td><b>Percipitation</b></td><td>:</td><td>"
+					+ Math.round(pop) + " %</td></tr>";
+			t = t + "<tr><td><b>Wind Speed</b></td><td>:</td><td>"
+					+ daily[i].wind_speed + " metre/sec</td></tr>"
+					+ "<tr><td><b>Humidity</b></td><td>:</td><td>"
+					+ daily[i].humidity + " %</td></tr>";
+			t = t + "<tr><td><b>Sunrise</b></td><td>:</td><td>" + sunriseString
+					+ "</td></tr><tr><td>" + "<b>Sunset</b></td><td>:</td><td>"
+					+ sunsetString + "</td></tr>";
+			;
+			//console.log(daily[i].weather[0].description);
+			t = t + "<tr><td><b>Weather Description</b></td><td>:</td><td>"
+					+ daily[i].weather[0].description + "</td></tr>";
+			t = t + "<tr><td><b>Dew point</b></td><td>:</td><td>"
+					+ daily[i].dew_point + " &#8451</td></tr>"
+					+ "<tr><td><b>Pressure</b></td><td>:</td><td>"
+					+ daily[i].pressure + " hPa</td></tr>";
+			t = t + "<tr><td><h4>AIR QUALITY</h4></td></tr>"
+					+ "<tr><td><b>UV index </b></td><td>:</td><td>"
+					+ daily[i].uvi + "</td></tr>";
+			var rain = 0;
+			if (daily[i].rain)
+				rain = daily[i].rain;
+
+			t = t + "<tr><td><b>Clouds</b></td><td>:</td><td>"
+					+ daily[i].clouds + " %</td></tr>"
+					+ "<tr><td><b>Rain</b></td><td>:</td><td>" + rain
+					+ " %</td></tr></table>";
+			var c = "#day" + i; //changed from info --> date
+			//var c="#info"+i;
+			//console.log(c);
+			//console.log(c);
+			$(c).html(t); //max temperature
+			console.log("----------------");
+		}
+
+	}
+</script>
+
+<style>
+p{
+text-align: -webkit-center;
+}
+h4{
+inline-size: max-content;
+}
+.ui-autocomplete {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1000;
+  display: none;
+  float: left;
+  min-width: 160px;
+  padding: 5px 0;
+  margin: 2px 0 0;
+  list-style: none;
+  font-size: 14px;
+  text-align: left;
+  background-color: #ffffff;
+  border: 1px solid #cccccc;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
+  -webkit-box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
+  background-clip: padding-box;
+}
+
+.ui-autocomplete > li > div {
+  display: block;
+  padding: 3px 20px;
+  clear: both;
+  font-weight: normal;
+  line-height: 1.42857143;
+  color: #333333;
+  white-space: nowrap;
+}
+
+.ui-state-hover,
+.ui-state-active,
+.ui-state-focus {
+  text-decoration: none;
+  color: #262626;
+  background-color: #f5f5f5;
+  cursor: pointer;
+}
+
+.ui-helper-hidden-accessible {
+  border: 0;
+  clip: rect(0 0 0 0);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  width: 1px;
+}
+</style>
+</head>
+<body  class="bg" onload="startTime()">
+		
+	<div class="container-fluid ">
+		<div class="row">
+
+			<div class="col-sm-4 col-xs-4">
+				<h3 class="lightcolor" id="welcome">Welcome user</h3>
+			</div>
+			<div class="col-sm-4 offset-sm-4 col-xs-4">
+				
+				<span style="float: right">
+				<button class="btn btn-primary" onclick="clearLocalStorage()">Logout</button>
+				</span>
+				<h3 class="lightcolor" id="time">Time</h3>
+			</div>
+			
+		</div><br/>
+	
+		<div class="row justify-content-center">
+				<input type="text" name="searchbox" id="city" placeholder="Enter the city name" class="text-center"><br>
+				<button class="btn btn-primary" onclick="getId()" id="b1">getWeatherdata</button>
+		</div>
+		<hr/>
+		<h2 id="cityname" class="text-center lightcolor"></h2>
+		<h3 id="timezone" class="text-center lightcolor"></h3>
+
+		<div class="row">
+			<div class="col-lg-4 offset-lg-1 col-md-4 offset-md-1 col-sm-4 offset-sm-2" style="background-color:white">
+				 <canvas id="myChart" style=""></canvas>
+			</div>
+			<div class="col-lg-4 offset-lg-2 col-md-4 offset-md-2 col-sm-4 offset-sm-1" style="background-color:white">
+				 <canvas id="barChart" style=""></canvas>  
+			</div>
+		</div>
+	<hr/>
+	
+<!-- timezone -->
+
+		<div id="cartoon" style="visibility: visible">
+			<small id="error" style="color: white" class="text-center"></small> <img
+				src="cartoon.gif" class="mx-auto d-block fitImage img-fluid">
+		</div>
+
+		<div id="content" style="visibility:hidden">
+			<div class=" text-center col-lg-4 offset-lg-4 col-md-4 offset-lg-4 col-sm-4 offset-lg-4">
+							<div class="page-header head" id="h0"><h3>Header</h3></div>
+							<div class="block">
+							<p id="day0">Hello</p>
+							<p id="info0"></p>
+							</div>
+						</div>
+			
+			<div class="row">
+						
+
+						<div class="text-center col-lg-4 col-md-4 col-sm-6">
+							<div class="page-header head" id="h1"><h3>Header</h3></div>
+							<div class="block">
+							<p id="day1" >Hello</p>
+							<p id="info1"></p>
+							</div>
+						</div>
+
+						<div class="text-center col-lg-4 col-md-4 col-sm-6">
+							<div class="page-header head" id="h2"><h3>Header</h3></div>
+							<div class="block">
+							<p id="day2" >Hello</p>
+							<p id="info2"></p>
+							</div>
+						</div>
+
+						<div class="text-center col-lg-4 col-md-4 col-sm-6 ">
+							<div class="page-header head" id="h3"><h3>Header</h3></div>
+							<div class="block">
+							<p id="day3" class="block">Hello</p>
+							<p id="info3" class="block"></p>
+							</div>
+						</div>
+
+						<div class="text-center col-lg-4 col-md-4 col-sm-6 ">
+							<div id="h4" class="page-header head"><h3>Header</h3></div>
+							<div class="block">
+							<p id="day4" >Hello</p>
+							<p id="info4"></p>
+							</div>
+						</div>
+
+						<div class="text-center col-lg-4 col-md-4 col-sm-6">
+							<div id="h5" class="page-header head"><h3>Header</h3></div>
+							<div class="block">
+							<p id="day5" >Hello</p>
+							<p id="info5"></p>
+							</div>
+						</div>
+
+						<div class="text-center col-lg-4 col-md-4 col-sm-6">
+							<div id="h6" class="page-header head"><h3>Header</h3></div>
+							<div class="block">
+							<p id="day6" >Hello</p>
+							<p id="info6"></p>
+							</div>
+						</div>
+
+					
+				</div>
+				<hr/>
+			</div> 
+				<button class="btn btn-block btn-info" id="moreinfobutton" style="visibility: hidden;" onclick="getWeatherInfoOfTheDay()">MoreInfo</button>
+
+		</div>
+	
+	
+
+<script>
+if(localStorage.getItem("message")==null){
+	window.location.replace("/");
+}
+var display=JSON.parse(localStorage.getItem("message"));
+console.log("Display :"+display['message']);
+$("#welcome").html(display['message']);
+uname=display['message'];
+//console.log("uname inside below script "+uname);
+//var chart=null,chart1=null;
+
+function getChart(){
+	if(window.chart != undefined) 
+		window.chart.destroy(); 
+
+var ctx = document.getElementById('myChart').getContext('2d');
+ window.chart = new Chart(ctx, {
+    // The type of chart we want to create
+    type: 'line',
+
+    // The data for our dataset
+    data: {
+        labels: x_axis,
+        datasets: [{
+            label: 'Temp-max',
+            backgroundColor: '#7dabde',
+            fill:false,
+            borderColor: '#7dabde',
+            data: y_axisMaxTemp
+        },{
+            label: 'Temp-min',
+            backgroundColor: '#3bd81f',
+            fill:false,
+            borderColor: '#3bd81f',
+            data: y_axisMinTemp
+        }]
+    },
+
+    // Configuration options go here
+    options: {
+    	 scales: {
+    		 yAxes: [ {
+    	          display: true,
+    	          scaleLabel: {
+    	            display: true,
+    	            labelString: 'Temperature(Celsius)'
+    	          }
+    	        } ]
+         }
+    }
+});
+
+var ctx1 = document.getElementById('barChart').getContext('2d');
+if(window.chart1 != undefined) 
+	window.chart1.destroy();
+	
+chart1 = new Chart(ctx1, {
+    // The type of chart we want to create
+    type: 'bar',
+
+    // The data for our dataset
+    data: {
+        labels: x_axis,
+        datasets: [{
+            label: 'Percipitation',
+            backgroundColor: "#3cba9f",
+            //borderColor: '#7dabde',
+            data: y_axisPercp
+        }]
+    },
+
+    // Configuration options go here
+    options: {
+    	scales: {
+   		 yAxes: [ {
+   	          display: true,
+   	          scaleLabel: {
+   	            display: true,
+   	            labelString: 'Percipitation(%)'
+   	          }
+   	        } ]
+        }
+    }
+});
+//chart.render();
+
+/*
+if(window.bar != undefined)
+	  console.log(window.bar);
+*/
+
+}
+
+
+function getBarChart(){
+
+		}
+
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,47 @@
+*{
+font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
+}
+.bg {
+  /* The image used */
+  background-image: url("clouds.jpg");
+  /*background-image: url("seasons.gif");*/
+  /* Full height */
+  height: auto;
+
+  /* Center and scale the image nicely */
+  /*background-position: center;*/
+  background-repeat: no-repeat;
+  background-size: cover;
+  width: 100%;
+}
+.myclass{
+	background-color: #ff3418;
+}
+
+.customDiv{
+	margin-bottom:10px;
+}
+.block{
+background-color:white;
+}
+
+::-webkit-input-placeholder {
+  text-align: center;
+}
+
+:-moz-placeholder {
+  text-align: center;
+}
+
+.lightcolor{
+	color:white;
+}
+.fitImage{
+height:auto;
+width:500px;
+}
+.head{
+	background: #ff8e00;
+	font-size: 26px;
+   line-height: 2;
+}
