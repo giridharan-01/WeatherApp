@@ -93,7 +93,7 @@ $(document).ready(function(){
 	var timezone=null;
 	var displayCityName=null;
 	
-	function getId(){
+	function getWeatherData(){
 		var arr=document.getElementById("city").value.split(",");
 		//console.log(arr[0]+" "+arr[1]+" "+arr[2]);
 		//console.log(arr.length);
@@ -106,7 +106,7 @@ $(document).ready(function(){
 		if(arr[0]!="" && arr.length==1){
 			console.log("Value in array");
 			city=arr[0];
-			getWeatherData();
+			getWeatherInfo();
 			return false;
 			//reintialize("empty");
 			//return false;
@@ -132,14 +132,14 @@ $(document).ready(function(){
 			  //city=arr[0];
 			  city=result;
 			  //console.log("id set =",id);
-			  getWeatherData();
+			  getWeatherInfo();
 			  //getWeatherDataUsingID();
 		}
 		request.send(payload);
 		console.log("request sent");
 	}
 	
-	function getWeatherData(){
+	function getWeatherInfo(){
 		//console.log(uname);
 		//console.log("Get Weather id=",id);
 		console.log("Weather Data () calls");
@@ -239,7 +239,7 @@ $(document).ready(function(){
 
 	}
 
-	function getWeatherInfoOfTheDay() { // x refers to the btn id
+	function getMoreInfo() { // x refers to the btn id
 		var daily = output["daily"];
 		console.log("daily");
 		console.log(output);
@@ -395,7 +395,7 @@ inline-size: max-content;
 	
 		<div class="row justify-content-center">
 				<input type="text" name="searchbox" id="city" placeholder="Enter the city name" class="text-center"><br>
-				<button class="btn btn-primary" onclick="getId()" id="b1">getWeatherdata</button>
+				<button class="btn btn-primary" onclick="getWeatherData()" id="b1">getWeatherdata</button>
 		</div>
 		<hr/>
 		<h2 id="cityname" class="text-center lightcolor"></h2>
@@ -482,7 +482,7 @@ inline-size: max-content;
 				</div>
 				<hr/>
 			</div> 
-				<button class="btn btn-block btn-info" id="moreinfobutton" style="visibility: hidden;" onclick="getWeatherInfoOfTheDay()">MoreInfo</button>
+				<button class="btn btn-block btn-info" id="moreinfobutton" style="visibility: hidden;" onclick="getMoreInfo()">MoreInfo</button>
 
 		</div>
 	
